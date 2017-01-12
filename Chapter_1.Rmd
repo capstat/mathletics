@@ -1,0 +1,213 @@
+---
+title: | 
+  | Mathletics: Chapter 1
+  | BASEBALL’S PYTHAGOREAN THEOREM  
+author: "by Wayne Winston, R code by Nick Capofari"
+date: "January 2, 2017"
+output: 
+  html_document:
+    theme: united
+---
+
+<style type="text/css">
+.table {
+  width = 40%;
+}
+</style>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '1.' + n}
+      } 
+  }
+});
+</script>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      warning=FALSE, message=FALSE)
+```
+
+The more runs a baseball team scores, the more games the team should win. Conversely, the fewer runs a team gives up, the more games the team should win. Bill James, probably the most celebrated advocate of applying mathematics to analysis of Major League Baseball (often called sabermetrics), studied many years of Major League Baseball (MLB) standings and found that the percentage of games won by a baseball team can be well approximated by the formula
+
+$$
+\begin{equation} \label{eq:1}
+\frac{\textrm{runs scored}^2}{\textrm{runs scored}^2+\textrm{runs allowed}^2} = \textrm{estimate of percentage of games won.}
+\end{equation}
+$$
+
+This formula has several desirable properties.  
+
+* The predicted win percentage is always between 0 and 1. 
+* An increase in runs scored increases predicted win percentage. 
+* A decrease in runs allowed increases predicted win percentage.  
+  
+Consider a right triangle with a hypotenuse (the longest side) of length c and two other sides of lengths a and b. Recall from high school geometry that the Pythagorean Theorem states that a triangle is a right triangle if and only if $a^2+b^2=c^2$. For example, a triangle with sides of lengths 3, 4, and 5 is a right triangle because $3^2+4^2=5^2$. The fact that equation (1.1) adds up the squares of two numbers led Bill James to call the relationship described in (1.1) Baseball’s Pythagorean Theorem.
+
+Let’s define $R=\frac{\textrm{runs scored}}{\textrm{runs allowed}}$ as a team’s scoring ratio. If we divide the numerator and denominator of (1.1) by $(\textrm{runs allowed})^2$, then the value of the fraction remains unchanged and we may rewrite (1.1) as equation (1.2).
+
+$$
+\begin{equation} \label{eq:2}
+\frac{R^2}{R^{2}+1} = \textrm{estimate of percentage of games won.}
+\end{equation}
+$$
+
+Below shows how well (1.2) predicts MLB teams’ winning percentages for the 1980–2006 seasons.
+
+```{r}
+library(Lahman) #for baseball stats
+library(knitr) #for nice looking tables
+
+#load the team data
+data("Teams")
+#if you are using RStudio, use the View() function to see all the data
+#look at seasons 1980-2006, W,L,R,RA
+team_df = Teams[Teams$yearID >= 1980 & Teams$yearID <= 2006,
+                c("yearID","teamID","W","L","R","RA")]
+#scoring ratio (sr) = R/RA
+team_df$Scoring.Ratio = team_df$R/team_df$RA
+#predicted win % = sr^2/((sr^2)+1)
+team_df$Predicted.Win.Pct = team_df$Scoring.Ratio^2/
+  ((team_df$Scoring.Ratio^2)+1)
+#win % W/G
+team_df$Actual.Win.Pct = team_df$W/(team_df$W+team_df$L)
+#absolute error = |actual-predicted|
+team_df$Absolute.Error = abs(
+  team_df$Actual.Win.Pct-team_df$Predicted.Win.Pct)
+#take a peek at the data frame
+kable(team_df[c(719:736),], row.names=FALSE,
+      caption="Figure 1.1. Baseball’s Pythagorean Theorem, 1980-2006.")
+```
+
+```{r}
+#people love R because the above code can be written as follows
+library(dplyr)
+team_df2 = Teams %>% 
+  filter(yearID >= 1980, Teams$yearID <= 2006) %>%
+  select(yearID, teamID, W, L, R, RA) %>%
+  mutate(Scoring.Ratio = R/RA,
+         Predicted.Win.Pct = Scoring.Ratio^2/((Scoring.Ratio^2)+1),
+         Actual.Win.Pct = W/(W+L),
+         Absolute.Error = abs(Actual.Win.Pct-Predicted.Win.Pct))
+#check to see if anything is different
+sum(!team_df==team_df2)
+```
+
+Figure 1.1 shows how well (1.2) predicts MLB teams’ winning percentages for the 1980–2006 seasons.
+
+For example, the 2006 Detroit Tigers (DET) scored 822 runs and gave up 675 runs. Their scoring ratio was $R=\frac{822}{675}=1.218$. Their predicted win percentage from Baseball’s Pythagorean Theorem was $\frac{1.218^2}{(1.2.18)^{2}+1}=.597$. The 2006 Tigers actually won a fraction of their games, or $\frac{95}{162}=.586$. Thus (1.2) was off by 1.1% in predicting the percentage of games won by the Tigers in 2006.
+For each team define error in winning percentage prediction as actual winning percentage minus predicted winning percentage. For example, for the 2006 Arizona Diamondbacks (ARI), error = .469 - .490 = -.021 and for the 2006 Boston Red Sox (BOS), error = .531 - .497 = 0.34. A positive error means that the team won more games than predicted while a negative error means the team won fewer games than predicted. The Absolute.Error column in figure 1.1 computes the absolute value of the prediction error for each team. Recall that the absolute value of a number is simply the distance of the number from 0. That is, |5| = |-5| = 5. The absolute prediction errors for each team were averaged to obtain a measure of how well the predicted win percentages fit the actual team winning percentages. The average of absolute forecasting errors is called the MAD (Mean Absolute Deviation)[^1]. For this data set, the predicted winning percentages of the Pythagorean Theorem were off by an average of 2% per team.
+
+```{r}
+mean(team_df$Absolute.Error)
+```
+
+Instead of blindly assuming winning percentage can be approximated by using the square of the scoring ratio, perhaps we should try a formula to predict winning percentage, such as
+
+$$
+\begin{equation} \label{eq:3}
+\frac{R^\textrm{exp}}{R^\textrm{exp}+1}.
+\end{equation}
+$$
+
+If we vary exp (exponent) in (1.3) we can make (1.3) better fit the actual dependence of winning percentage on scoring ratio for different sports. For baseball, we will allow exp in (1.3) to vary between 1 and 3. Of course, exp = 2 reduces to the Pythagorean Theorem.
+
+Figure 1.2 shows how MAD changes as we vary exp between 1 and 3. We see that indeed exp = 1.9 yields the smallest MAD (1.96%). An exp value of 2 is almost as good (MAD of 1.97%), so for simplicity we will stick with Bill James’s view that exp = 2. Therefore, exp = 2 (or 1.9) yields the best forecasts if we use an equation of form (1.3). Of course, there might be another equation that predicts winning percentage better than the Pythagorean Theorem from runs scored and allowed. The Pythagorean Theorem is simple and intuitive, however, and works very well. After all, we are off in predicting team wins by an average of 162 $\times$ .02, which is approximately three wins per team. Therefore, I see no reason to look for a more complicated (albeit slightly more accurate) model.
+
+```{r}
+#numbers from 1-3 going up by 0.1
+exponent = seq(1, 3, 0.1)
+#take each exponent and plug it into this formula
+MAD = lapply(exponent, function(x){
+  mean(abs(
+  team_df$Scoring.Ratio^x/
+  ((team_df$Scoring.Ratio^x)+1)
+  -team_df$Actual.Win.Pct))})
+#display
+kable(data.frame(exponent, "MAD"=unlist(MAD)), 
+      row.names=FALSE, 
+      caption="Figure 1.2. Dependence of Pythagorean Theorem accuracy on exponent.")
+```
+
+###How Well Does the Pythagorean Theorem Forecast?  
+
+To test the utility of the Pythagorean Theorem (or any prediction model), we should check how well it forecasts the future. I compared the Pythagorean Theorem’s forecast for each MLB playoff series (1980– 2007) against a prediction based just on games won. For each playoff series the Pythagorean method would predict the winner to be the team with the higher scoring ratio, while the “games won” approach simply predicts the winner of a playoff series to be the team that won more games. We found that the Pythagorean approach correctly predicted 57 of 106 playoff series (53.8%) while the “games won” approach correctly predicted the winner of only 50% (50 out of 100) of playoff series.[^2] 
+
+create a github account for mathletics
+csv will be there
+use that to do the work above
+add link to scraper
+
+```{r}
+
+```
+
+The reader is probably disappointed that even the Pythagorean method only correctly forecasts the outcome of less than 54% of baseball playoff series. I believe that the regular season is a relatively poor predictor of the playoffs in baseball because a team’s regular season record depends greatly on the performance of five starting pitchers. During the playoffs teams only use three or four starting pitchers, so much of the regular season data (games involving the fourth and fifth starting pitchers) are not relevant for predicting the outcome of the playoffs.
+
+For anecdotal evidence of how the Pythagorean Theorem forecasts the future performance of a team better than a team’s win-loss record, consider the case of the 2005 Washington Nationals. On July 4, 2005, the Nationals were in first place with a record of 50–32. If we extrapolate this winning percentage we would have predicted a final record of 99–63. On July 4, 2005, the Nationals scoring ratio was .991. On July 4, 2005, (1.2) would have predicted a final record of 80–82. Sure enough, the poor Nationals finished 81–81.  
+
+###The Importance of the Pythagorean Theorem
+
+Baseball’s Pythagorean Theorem is also important because it allows us to determine how many extra wins (or losses) will result from a trade. Suppose a team has scored 850 runs during a season and has given up 800 runs. Suppose we trade a shortstop (Joe) who “created”[^3] 150 runs for a shortstop (Greg) who created 170 runs in the same number of plate appearances. This trade will cause the team (all other things being equal) to score 20 more runs (170 - 150 = 20). Before the trade, $R=\frac{850}{800}=1.0625$, and we would predict the team to have won $\frac{162(1.0625)^{2}}{1+(1.0625)^{2}}=85.9$ games. After the
+trade, $R=\frac{870}{800}=1.0875$, and we would predict the team to win $\frac{162(1.0875)^{2}}{1+(1.0875)^{2}}=87.8$ games. Therefore, we estimate the trade makes our team 1.9 games better (87.8 - 85.9 = 1.9). In chapter 9, we will see how the Pythagorean Theorem can be used to help determine fair salaries for MLB players.
+
+###Football and Basketball “Pythagorean Theorems”
+
+Does the Pythagorean Theorem hold for football and basketball? Daryl Morey, the general manager for the Houston Rockets, has shown that for the NFL, equation (1.3) with exp = 2.37 gives the most accurate predictions for winning percentage while for the NBA, equation (1.3) with exp = 13.91 gives the most accurate predictions for winning percentage. Figure 1.3 gives the predicted and actual winning percentages for the NFL for the 2006 season, while figure 1.4 gives the predicted and actual winning percentages for the NBA for the 2006–7 season.
+
+```{r}
+#get csv from github
+#add link to csv and code
+
+#pyt win % using exp=2.7
+team_stats_df$Win.Pct.2.7 = (team_stats_df$Ratio^2.7)/
+  ((team_stats_df$Ratio^2.7)+1)
+#pyt win % using morely exp=2.37
+team_stats_df$Win.Pct.morely = (team_stats_df$Ratio^2.37)/
+  ((team_stats_df$Ratio^2.37)+1)
+#absolute error exp=2.7
+team_stats_df$Error.2.7 = abs(
+  team_stats_df$Win.Pct-team_stats_df$Win.Pct.2.7)
+#absolute error morely exp=2.37
+team_stats_df$Error.morely = abs(
+  team_stats_df$Win.Pct-team_stats_df$Win.Pct.morely)
+#display the data frame
+kable(arrange(team_stats_df[team_stats_df$Year==2006,], Tm),
+      row.names=FALSE, 
+      caption="Figure 1.3. Predicted NFL winning percentages.")
+```
+
+Using Morely's exp = 2.34, MAD = ```r round(mean(team_stats_df$Error.morely), 3)```.  Using exp = 2.7, MAD = ```r round(mean(team_stats_df$Error.2.7), 3)```.  
+
+```{r}
+#NBA
+```
+
+For the 2005–7 NFL seasons, MAD was minimized by exp = 2.7. Exp = 2.7 yielded a MAD of 5.9%, while Morey’s exp = 2.37 yielded a MAD of 6.1%. For the 2004–7 NBA seasons, exp = 15.4 best fit actual winning percentages. MAD for these seasons was 3.36% for exp = 15.4 and 3.40% for exp = 13.91. Since Morey’s values of exp are very close in accuracy to the values we found from recent seasons we will stick with Morey’s values of exp.  
+
+These predicted winning percentages are based on regular season data. Therefore, we could look at teams that performed much better than expected during the regular season and predict that “luck would catch up with them.” This train of thought would lead us to believe that these teams would perform worse during the playoffs. Note that the Miami Heat and Dallas Mavericks both won about 8% more games than expected during the regular season. Therefore, we would have predicted Miami and Dallas to perform worse during the playoffs than their actual win-loss record indicated. Sure enough, both Dallas and Miami suffered unexpected first-round defeats. Conversely, during the regular season the San Antonio Spurs and Chicago Bulls won around 8% fewer games than the Pythagorean Theorem predicts, indicating that these teams would perform better than expected in the playoffs. Sure enough, the Bulls upset the Heat and gave the Detroit Pistons a tough time. Of course, the Spurs won the 2007 NBA title. In addition, the Pythagorean Theorem had the Spurs as by far the league’s best team (78% predicted winning percentage). Note the team that underachieved the most was the Boston Celtics, who won nearly 9% fewer (or 7) games than predicted. Many people suggested the Celtics “tanked” games during the regular season to improve their chances of obtaining potential future superstars such as Greg Oden and Kevin Durant in the 2007 draft lottery. The fact that the Celtics won seven fewer games than expected does not prove this conjecture, but it is certainly consistent with the view that Celtics did not go all out to win every close game.
+
+<center>@@@@@@@@@@@@</center>
+
+[^1]:The actual errors were not simply averaged because averaging positive and negative errors would result in positive and negative errors canceling out. For example, if one team wins 5% more games than (1.2)  predicts and another team wins 5% fewer games than (1.2)  predicts, the average of the errors is 0 but the average of the absolute errors is 5%. Of course, in this simple situation estimating the average error as 5% is correct while estimating the average error as 0% is nonsensical.  
+
+[^2]:In six playoff series the opposing teams had identical win-loss records so the “Games Won” approach could not make a prediction.
+
+[^3]:In chapters 2 4 we will explain in detail how to determine how many runs a hitter creates.
+
+####FIX EQUATION FONT
+####Add custom css for small data frames
+####intro install r quick r tutorial
+install packages and install the ones we will use library()
+view
+head tail summary
+factors
+$ access a column no space
+c()
+df[]
+column wise math
+seq, rep, lapply(unlist)
+= vs ->
