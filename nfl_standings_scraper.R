@@ -43,10 +43,6 @@ team_stats_df[, c(3:8)] = sapply(team_stats_df[, c(3:8)], as.numeric)
 #remove any team without a W L T 
 #(not sure why they would be in there but there are some)
 team_stats_df = team_stats_df[!is.na(team_stats_df$`W-L%`),]
-#actual win %
-team_stats_df$Win.Pct = ifelse(team_stats_df$W==0, 0, 
-                               team_stats_df$W/
-                                 (team_stats_df$W+team_stats_df$L))
 #points ratio
 team_stats_df$Ratio = team_stats_df$PF/team_stats_df$PA
 #save so you dont have to scrape again
