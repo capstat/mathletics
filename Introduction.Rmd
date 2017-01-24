@@ -1,0 +1,150 @@
+---
+title: "Introduction"
+author: "by Nicholas Capofari"
+date: "January 22, 2017"
+output: 
+  html_document:
+    theme: united
+    toc: true
+    toc_depth: 3
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      warning=FALSE, message=FALSE, comment=NA)
+```
+
+#Introduction: Wayne Winston's Mathletics in R
+
+"Mathletics", by Wayne Winston, is a wonderful book that explains how data analytics is used in professional sports.  The data work in the book is done using Microsoft Excel.  I am an R user.  While reading the first few chapters of his book, I began thinking about how the analytic examples he uses could also serve as great introductory examples for anyone interested in learning R.
+
+R is a freely available programming language used for statistical computing.  R is appealing because of the price, the fact that it is open source (it is constantly being improved by an engaged community of R users around the world), and R's awesome graphic capabilities.  R is quickly becoming the go-to tool for data analytics.  I have attempted to take the examples from "Mathletics" and use them to create an R tutorial.  
+
+###Getting Started
+
+To install R, follow this [link](https://ftp.ussg.iu.edu/CRAN/).  Once you have finished, you should also install [RStudio](https://www.rstudio.com/products/rstudio/download/).  RStudio is a an awesome intergated devlopment environment (IDE) for programming in R.
+
+Below are some R basics.  A longer overview can be found [here](https://cran.r-project.org/doc/contrib/Torfs+Brauer-Short-R-Intro.pdf).  R's introduction manual can be found [here](https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf).  I found both of these extremely helpful while coming up with these examples and explanations.
+
+###Some R Basics
+
+R has a robust library of open source packages.  They are easy to install.  Make sure you load the package after installation is finished.
+
+```{r eval=FALSE} 
+install.packages("Lahman") #installs the package
+library(Lahman) #this loads it
+```
+
+This package provides the tables from the [Sean Lahman Baseball Database](http://www.seanlahman.com/baseball-archive/statistics/).  
+
+Since this is an attempt to replicate work that was originally done using Microsoft Excel, a basic understanding of R's data frame structure is needed.  The simplest explanation of a data frame for an excel user is that data frames are essentially spreadsheets.  Each column represents a variable and each row contains all measured variables for the same unit.  
+
+The rows and columns of a data frame are vectors.  This is the simplest R data structure.  A vector groups elements together in a specific order.  You can assign a vector to a variable using the *function* `c()`.
+
+```{r}
+#basic vectors
+x = c(1, 2, 3)
+```
+
+Most R users use `<-` as the assignment operator.  I use `=`.  This [link](http://stackoverflow.com/questions/1741820/assignment-operators-in-r-and) can explain the difference.  When I first started programming in R, I found using `=` less confusing, so I have stuck with it.  But just so you know, [Google's R style guide](https://google.github.io/styleguide/Rguide.xml#assignment) recommends using `<-`, as does the R community.
+
+```{r}
+#more vectors
+y = c("My", "first", "vector")
+z <- c(TRUE, FALSE, TRUE) #same as z = c(TRUE, FALSE, TRUE)
+mixed_vector = c(x[1], y[2], z[3])
+mixed_vector
+```
+
+There are other ways to create vectors when the vector follows a specific pattern.
+
+```{r}
+seq(from=2, to=10, by=2)
+rep(c("OH", "NO"), times=3)
+c(-2:5)
+```
+
+To create a data frame, we can group vectors togther.
+
+```{r}
+Year = seq(2014, 2016)
+Team = rep("New York Mets", 3)
+W = c(79, 90, 87)
+L = c(83, 72, 75)
+mets = data.frame(Year, Team, W, L)
+#if you are using RStudio, use the View() function to inspect the data frame
+#View(mets)
+mets
+```
+
+We can access the information in a data frame in many ways.
+
+```{r}
+#use $ to access a data frame column
+mets$Year
+#use logical expressions with vectors
+mets$W[mets$W >= 81]
+#data frame indexing: df[row, column]
+mets[2, 3]
+mets[ , c("W", "L")]
+mets[mets$Year==2016, c(3, 4)]
+mets[mets$W > mets$L, "Year"]
+```
+
+R has many built in functions.  Some functions return one element.
+
+```{r}
+max(mets$Year)
+sum(mets$W)
+mean(mets$W)
+length(mets$Team)
+```
+
+Other functions return a vector the same length as the input.
+
+```{r}
+paste(mets$Year, mets$Team, sep="---")
+#create a new column of the fly using $
+mets$Games = mets$W + mets$L
+#no spaces for column names, unless column name is inside ` `
+mets$W.pct = round(mets$W/mets$Games, 3)
+#vectorized if 
+mets$`Over 500` = ifelse(mets$W > mets$L, TRUE, FALSE)
+```
+
+We can add rows and columns to our data frames using the `rbind` and  `cbind` functions.
+
+```{r}
+next_year = c(2017, "New York Mets", 162, 0, 162, 1.000, TRUE)
+rbind(mets, next_year)
+cbind(mets, League=rep("NL", 3))
+#our changes to the data frame were not saved 
+#make sure to store any changes in a variable
+mets_2 = cbind(mets, Manager=rep("Terry Collins", 3))
+mets_2
+```
+
+There are many ways to import datasets into R.  `read.csv` or `readLines` can be used when we have a file we would like to work with.  Many times, R packages come with ready to use datasets.
+
+```{r}
+#the cars dataset that is included with the basic R installation
+data(mtcars)
+#what are we wroking with?
+colnames(mtcars)
+nrow(mtcars)
+#sneak a peek
+head(mtcars) # or tail(mtcars)
+#get a quick summary
+summary(mtcars[ , c(1:4)])
+```
+
+
+
+
+#####LAPPLY
+unlist
+
+
+
+
+
