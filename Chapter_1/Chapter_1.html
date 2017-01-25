@@ -164,10 +164,9 @@ MathJax.Hub.Config({
 \end{equation}
 \]</span></p>
 <p>Below shows how well (1.2) predicts MLB teams’ winning percentages for the 1980–2006 seasons.</p>
-<pre class="r"><code>library(Lahman) #for baseball stats
-library(knitr) #for nice looking tables
-#remember, to install any package use this command
-#install.packages(&quot;package-name&quot;)
+<pre class="r"><code>#to install any package 
+#install.packages(&quot;package.name&quot;)
+library(Lahman) #for baseball stats
 
 #load the team data
 data(&quot;Teams&quot;)
@@ -184,10 +183,7 @@ team_df$Predicted.Win.Pct = team_df$Scoring.Ratio^2/
 team_df$Actual.Win.Pct = team_df$W/(team_df$W+team_df$L)
 #absolute error = |actual-predicted|
 team_df$Absolute.Error = abs(
-  team_df$Actual.Win.Pct-team_df$Predicted.Win.Pct)
-#take a peek at the data frame
-kable(team_df[c(719:736),], row.names=FALSE,
-      caption=&quot;Figure 1.1. Baseball’s Pythagorean Theorem, 1980-2006.&quot;)</code></pre>
+  team_df$Actual.Win.Pct-team_df$Predicted.Win.Pct)</code></pre>
 <table>
 <caption>Figure 1.1. Baseball’s Pythagorean Theorem, 1980-2006.</caption>
 <thead>
@@ -454,11 +450,7 @@ MAD = sapply(exponent, function(x){
   mean(abs(
   team_df$Scoring.Ratio^x/
   ((team_df$Scoring.Ratio^x)+1)
-  -team_df$Actual.Win.Pct))})
-#display
-kable(data.frame(exponent, &quot;MAD&quot;=MAD), 
-      row.names=FALSE, 
-      caption=&quot;Figure 1.2. Dependence of Pythagorean Theorem accuracy on exponent.&quot;)</code></pre>
+  -team_df$Actual.Win.Pct))})</code></pre>
 <table>
 <caption>Figure 1.2. Dependence of Pythagorean Theorem accuracy on exponent.</caption>
 <thead>
@@ -602,10 +594,7 @@ nfl_05_07$Win.Pct.morely = (nfl_05_07$Ratio^2.37)/((nfl_05_07$Ratio^2.37)+1)
 #absolute error exp=2.7
 nfl_05_07$Error.2.7 = abs(nfl_05_07$W.L.-nfl_05_07$Win.Pct.2.7)
 #absolute error morely exp=2.37
-nfl_05_07$Error.morely = abs(nfl_05_07$W.L.-nfl_05_07$Win.Pct.morely)
-#display the data frame
-kable(arrange(nfl_05_07[nfl_05_07$Year==2007,], Tm), row.names=FALSE,
-      caption=&quot;Figure 1.3. Predicted NFL winning percentages.&quot;)</code></pre>
+nfl_05_07$Error.morely = abs(nfl_05_07$W.L.-nfl_05_07$Win.Pct.morely)</code></pre>
 <table>
 <caption>Figure 1.3. Predicted NFL winning percentages.</caption>
 <thead>
@@ -1123,10 +1112,7 @@ nba_04_07$Win.Pct.morely = (nba_04_07$Ratio^13.91)/((nba_04_07$Ratio^13.91)+1)
 #absolute error exp=2.7
 nba_04_07$Error.15.4 = abs(nba_04_07$W.L.-nba_04_07$Win.Pct.15.4)
 #absolute error morely exp=2.37
-nba_04_07$Error.morely = abs(nba_04_07$W.L.-nba_04_07$Win.Pct.morely)
-#display the data frame
-kable(arrange(nba_04_07[nba_04_07$Year==2006,], Team), row.names=FALSE,
-      caption=&quot;Figure 1.4. Predicted NBA winning percentages.&quot;)</code></pre>
+nba_04_07$Error.morely = abs(nba_04_07$W.L.-nba_04_07$Win.Pct.morely)</code></pre>
 <table>
 <caption>Figure 1.4. Predicted NBA winning percentages.</caption>
 <thead>

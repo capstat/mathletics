@@ -54,10 +54,9 @@ $$
 Below shows how well (1.2) predicts MLB teams’ winning percentages for the 1980–2006 seasons.
 
 ```{r}
+#to install any package 
+#install.packages("package.name")
 library(Lahman) #for baseball stats
-library(knitr) #for nice looking tables
-#remember, to install any package use this command
-#install.packages("package-name")
 
 #load the team data
 data("Teams")
@@ -75,6 +74,10 @@ team_df$Actual.Win.Pct = team_df$W/(team_df$W+team_df$L)
 #absolute error = |actual-predicted|
 team_df$Absolute.Error = abs(
   team_df$Actual.Win.Pct-team_df$Predicted.Win.Pct)
+```
+
+```{r echo=FALSE}
+library(knitr) #for nice looking tables
 #take a peek at the data frame
 kable(team_df[c(719:736),], row.names=FALSE,
       caption="Figure 1.1. Baseball’s Pythagorean Theorem, 1980-2006.")
@@ -124,6 +127,9 @@ MAD = sapply(exponent, function(x){
   team_df$Scoring.Ratio^x/
   ((team_df$Scoring.Ratio^x)+1)
   -team_df$Actual.Win.Pct))})
+```
+
+```{r echo=FALSE}
 #display
 kable(data.frame(exponent, "MAD"=MAD), 
       row.names=FALSE, 
@@ -199,6 +205,9 @@ nfl_05_07$Win.Pct.morely = (nfl_05_07$Ratio^2.37)/((nfl_05_07$Ratio^2.37)+1)
 nfl_05_07$Error.2.7 = abs(nfl_05_07$W.L.-nfl_05_07$Win.Pct.2.7)
 #absolute error morely exp=2.37
 nfl_05_07$Error.morely = abs(nfl_05_07$W.L.-nfl_05_07$Win.Pct.morely)
+```
+
+```{r echo=FALSE}
 #display the data frame
 kable(arrange(nfl_05_07[nfl_05_07$Year==2007,], Tm), row.names=FALSE,
       caption="Figure 1.3. Predicted NFL winning percentages.")
@@ -226,6 +235,9 @@ nba_04_07$Win.Pct.morely = (nba_04_07$Ratio^13.91)/((nba_04_07$Ratio^13.91)+1)
 nba_04_07$Error.15.4 = abs(nba_04_07$W.L.-nba_04_07$Win.Pct.15.4)
 #absolute error morely exp=2.37
 nba_04_07$Error.morely = abs(nba_04_07$W.L.-nba_04_07$Win.Pct.morely)
+```
+
+```{r echo=FALSE}
 #display the data frame
 kable(arrange(nba_04_07[nba_04_07$Year==2006,], Team), row.names=FALSE,
       caption="Figure 1.4. Predicted NBA winning percentages.")
