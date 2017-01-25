@@ -132,11 +132,6 @@ $(document).ready(function () {
 </ul>
 </div>
 
-<style type="text/css">
-.table {
-  width = 1%;
-}
-</style>
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   TeX: { 
@@ -171,6 +166,8 @@ MathJax.Hub.Config({
 <p>Below shows how well (1.2) predicts MLB teams’ winning percentages for the 1980–2006 seasons.</p>
 <pre class="r"><code>library(Lahman) #for baseball stats
 library(knitr) #for nice looking tables
+#remember, to install any package use this command
+#install.packages(&quot;package-name&quot;)
 
 #load the team data
 data(&quot;Teams&quot;)
@@ -453,13 +450,13 @@ sum(!team_df==team_df2)</code></pre>
 <pre class="r"><code>#numbers from 1-3 going up by 0.1
 exponent = seq(1, 3, 0.1)
 #take each exponent and plug it into this formula
-MAD = lapply(exponent, function(x){
+MAD = sapply(exponent, function(x){
   mean(abs(
   team_df$Scoring.Ratio^x/
   ((team_df$Scoring.Ratio^x)+1)
   -team_df$Actual.Win.Pct))})
 #display
-kable(data.frame(exponent, &quot;MAD&quot;=unlist(MAD)), 
+kable(data.frame(exponent, &quot;MAD&quot;=MAD), 
       row.names=FALSE, 
       caption=&quot;Figure 1.2. Dependence of Pythagorean Theorem accuracy on exponent.&quot;)</code></pre>
 <table>
@@ -564,8 +561,7 @@ kable(data.frame(exponent, &quot;MAD&quot;=unlist(MAD)),
 <pre class="r"><code>library(scales) #to format percentages
 #read the csv from github
 all_series = read.csv(
-  &quot;https://raw.githubusercontent.com/capstat/mathletics/master/mlb_playoffs.csv&quot;,
-  stringsAsFactors=FALSE)
+&quot;https://raw.githubusercontent.com/capstat/mathletics/master/Chapter_1/mlb_playoffs.csv&quot;)
 #just the years from 1980-2007
 series_80_07 = all_series[all_series$year &gt;= 1989 &amp; all_series$year &lt;= 2007,]
 #add a column for scoring ratio
@@ -595,7 +591,7 @@ series_df$W.Ratio.Greater = ifelse((series_df$Ratio) &gt; (series_df$LRatio),
 <p><a href="https://github.com/capstat/mathletics/blob/master/nfl_standings_scraper.R" target="_blank"> Click here to see the code used to scrape all NFL standings data since 1922 from football-reference.com </a></p>
 <pre class="r"><code>#read the csv off github
 nfl_standings = read.csv(
-  &quot;https://raw.githubusercontent.com/capstat/mathletics/master/nfl_standings.csv&quot;)
+  &quot;https://raw.githubusercontent.com/capstat/mathletics/master/Chapter_1/nfl_standings.csv&quot;)
 #look at just 2 seasons
 nfl_05_07 = nfl_standings[nfl_standings$Year &gt;= 2005 &amp;
                             nfl_standings$Year &lt;= 2007,]
@@ -1116,7 +1112,7 @@ kable(arrange(nfl_05_07[nfl_05_07$Year==2007,], Tm), row.names=FALSE,
 <p><a href="https://github.com/capstat/mathletics/blob/master/nba_standings_scraper.R" target="_blank"> Click here to see the code used to scrape all NBA standings data since 1950 from basketball-reference.com </a></p>
 <pre class="r"><code>#read the csv off github
 nba_standings = read.csv(
-  &quot;https://raw.githubusercontent.com/capstat/mathletics/master/nba_standings.csv&quot;)
+  &quot;https://raw.githubusercontent.com/capstat/mathletics/master/Chapter_1/nba_standings.csv&quot;)
 #look at just 2 seasons
 nba_04_07 = nba_standings[nba_standings$Year &gt;= 2005 &amp;
                             nba_standings$Year &lt;= 2007,]
