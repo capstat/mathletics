@@ -427,10 +427,7 @@ team_df2 = Teams %&gt;%
   mutate(Scoring.Ratio = R/RA,
          Predicted.Win.Pct = Scoring.Ratio^2/((Scoring.Ratio^2)+1),
          Actual.Win.Pct = W/(W+L),
-         Absolute.Error = abs(Actual.Win.Pct-Predicted.Win.Pct))
-#check to see if anything is different
-sum(!team_df==team_df2)</code></pre>
-<pre><code>## [1] 0</code></pre>
+         Absolute.Error = abs(Actual.Win.Pct-Predicted.Win.Pct))</code></pre>
 <p>Figure 1.1 shows how well (1.2) predicts MLB teams’ winning percentages for the 1980–2006 seasons.</p>
 <p>For example, the 2006 Detroit Tigers (DET) scored 822 runs and gave up 675 runs. Their scoring ratio was <span class="math inline">\(R=\frac{822}{675}=1.218\)</span>. Their predicted win percentage from Baseball’s Pythagorean Theorem was <span class="math inline">\(\frac{1.218^2}{(1.2.18)^{2}+1}=.597\)</span>. The 2006 Tigers actually won a fraction of their games, or <span class="math inline">\(\frac{95}{162}=.586\)</span>. Thus (1.2) was off by 1.1% in predicting the percentage of games won by the Tigers in 2006. For each team define error in winning percentage prediction as actual winning percentage minus predicted winning percentage. For example, for the 2006 Arizona Diamondbacks (ARI), error = .469 - .490 = -.021 and for the 2006 Boston Red Sox (BOS), error = .531 - .497 = 0.34. A positive error means that the team won more games than predicted while a negative error means the team won fewer games than predicted. The Absolute.Error column in figure 1.1 computes the absolute value of the prediction error for each team. Recall that the absolute value of a number is simply the distance of the number from 0. That is, |5| = |-5| = 5. The absolute prediction errors for each team were averaged to obtain a measure of how well the predicted win percentages fit the actual team winning percentages. The average of absolute forecasting errors is called the MAD (Mean Absolute Deviation)<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. For this data set, the predicted winning percentages of the Pythagorean Theorem were off by an average of 2% per team.</p>
 <pre class="r"><code>mean(team_df$Absolute.Error)</code></pre>
@@ -549,7 +546,7 @@ MAD = sapply(exponent, function(x){
 <div id="how-well-does-the-pythagorean-theorem-forecast" class="section level3">
 <h3>How Well Does the Pythagorean Theorem Forecast?</h3>
 <p>To test the utility of the Pythagorean Theorem (or any prediction model), we should check how well it forecasts the future. I compared the Pythagorean Theorem’s forecast for each MLB playoff series (1980 – 2007) against a prediction based just on games won. For each playoff series the Pythagorean method would predict the winner to be the team with the higher scoring ratio, while the “games won” approach simply predicts the winner of a playoff series to be the team that won more games.</p>
-<p><a href="https://github.com/capstat/mathletics/blob/master/mlb_playoffs_scraper.R" target="_blank"> Click here to see the code used to scrape all MLB playoff series data from baseball-reference.com </a></p>
+<p><a href="https://github.com/capstat/mathletics/blob/master/Chapter_1/mlb_playoffs_scraper.R" target="_blank"> Click here to see the code used to scrape all MLB playoff series data from baseball-reference.com </a></p>
 <pre class="r"><code>library(scales) #to format percentages
 #read the csv from github
 all_series = read.csv(
@@ -580,7 +577,7 @@ series_df$W.Ratio.Greater = ifelse((series_df$Ratio) &gt; (series_df$LRatio),
 <div id="football-and-basketball-pythagorean-theorems" class="section level3">
 <h3>Football and Basketball “Pythagorean Theorems”</h3>
 <p>Does the Pythagorean Theorem hold for football and basketball? Daryl Morey, the general manager for the Houston Rockets, has shown that for the NFL, equation (1.3) with exp = 2.37 gives the most accurate predictions for winning percentage while for the NBA, equation (1.3) with exp = 13.91 gives the most accurate predictions for winning percentage. Figure 1.3 gives the predicted and actual winning percentages for the NFL for the 2006-7 season, while figure 1.4 gives the predicted and actual winning percentages for the NBA for the 2006–7 season.</p>
-<p><a href="https://github.com/capstat/mathletics/blob/master/nfl_standings_scraper.R" target="_blank"> Click here to see the code used to scrape all NFL standings data since 1922 from football-reference.com </a></p>
+<p><a href="https://github.com/capstat/mathletics/blob/master/Chapter_1/nfl_standings_scraper.R" target="_blank"> Click here to see the code used to scrape all NFL standings data since 1922 from football-reference.com </a></p>
 <pre class="r"><code>#read the csv off github
 nfl_standings = read.csv(
   &quot;https://raw.githubusercontent.com/capstat/mathletics/master/Chapter_1/nfl_standings.csv&quot;)
@@ -1098,7 +1095,7 @@ nfl_05_07$Error.morely = abs(nfl_05_07$W.L.-nfl_05_07$Win.Pct.morely)</code></pr
 </tbody>
 </table>
 <p>For the 2005–7 NFL seasons, MAD was minimized by exp = 2.7. Exp = 2.7 yielded a MAD of <code>5.9%</code>, while Morey’s exp = 2.37 yielded a MAD of <code>6.2%</code>.</p>
-<p><a href="https://github.com/capstat/mathletics/blob/master/nba_standings_scraper.R" target="_blank"> Click here to see the code used to scrape all NBA standings data since 1950 from basketball-reference.com </a></p>
+<p><a href="https://github.com/capstat/mathletics/blob/master/Chapter_1/nba_standings_scraper.R" target="_blank"> Click here to see the code used to scrape all NBA standings data since 1950 from basketball-reference.com </a></p>
 <pre class="r"><code>#read the csv off github
 nba_standings = read.csv(
   &quot;https://raw.githubusercontent.com/capstat/mathletics/master/Chapter_1/nba_standings.csv&quot;)
