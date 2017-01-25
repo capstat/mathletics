@@ -126,7 +126,7 @@ mets_2 = cbind(mets, Manager=rep("Terry Collins", 3))
 mets_2
 ```
 
-There are many ways to import datasets into R.  `read.csv` or `readLines` can be used when we have a file we would like to work with.  Many times, R packages come with ready to use datasets.
+There are many ways to import datasets into R.  `read.csv` or `readLines` can be used when we have a file we would like to work with.  Many times R packages come with ready to use datasets.
 
 ```{r}
 #the cars dataset that is included with the basic R installation
