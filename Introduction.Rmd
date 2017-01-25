@@ -104,6 +104,8 @@ Other functions return a vector the same length as the input.
 
 ```{r}
 paste(mets$Year, mets$Team, sep="---")
+#apply a fuction to every element in a vector
+sapply(mets$Year, function(x){ x-2000 })
 #create a new column of the fly using $
 mets$Games = mets$W + mets$L
 #no spaces for column names, unless column name is inside ` `
@@ -137,13 +139,6 @@ head(mtcars) # or tail(mtcars)
 #get a quick summary
 summary(mtcars[ , c(1:4)])
 ```
-
-
-
-
-#####LAPPLY
-unlist
-
 
 
 

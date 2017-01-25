@@ -210,6 +210,9 @@ mets[2, 3]</code></pre>
 <p>Other functions return a vector the same length as the input.</p>
 <pre class="r"><code>paste(mets$Year, mets$Team, sep=&quot;---&quot;)</code></pre>
 <pre><code>[1] &quot;2014---New York Mets&quot; &quot;2015---New York Mets&quot; &quot;2016---New York Mets&quot;</code></pre>
+<pre class="r"><code>#apply a fuction to every element in a vector
+sapply(mets$Year, function(x){ x-2000 })</code></pre>
+<pre><code>[1] 14 15 16</code></pre>
 <pre class="r"><code>#create a new column of the fly using $
 mets$Games = mets$W + mets$L
 #no spaces for column names, unless column name is inside ` `
@@ -264,10 +267,6 @@ summary(mtcars[ , c(1:4)])</code></pre>
  Mean   :20.09   Mean   :6.188   Mean   :230.7   Mean   :146.7  
  3rd Qu.:22.80   3rd Qu.:8.000   3rd Qu.:326.0   3rd Qu.:180.0  
  Max.   :33.90   Max.   :8.000   Max.   :472.0   Max.   :335.0  </code></pre>
-<div id="lapply" class="section level5">
-<h5>LAPPLY</h5>
-<p>unlist</p>
-</div>
 </div>
 </div>
 
