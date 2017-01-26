@@ -11,19 +11,29 @@ stat_links = c()
 #create an empty data frame to hold all our data
 playoffs = data.frame()
 #web address for each playoff series - the year will replace the %s
-base_url = "http://www.baseball-reference.com/postseason/%s_WS.shtml"
-urls = c(base_url)
+ws_url = "http://www.baseball-reference.com/postseason/%s_WS.shtml"
+urls = c(ws_url)
 #for every year since 1st world series
 for(i in seq(1903, 2016, 1)){
   #skip the years without world series
   if(i == 1904 | i == 1994){ next }
-  #add urls based upon ployoff structure
-  if(i == 1969){ 
-    urls = c(urls, str_replace(base_url, "WS", "ALCS"), str_replace(base_url, "WS", "NLCS"))
+  #set urls based upon ployoff structure
+  if(i == 1969 | i == 1982){ 
+    urls = c(ws_url, str_replace(ws_url, "WS", "ALCS"), 
+             str_replace(ws_url, "WS", "NLCS"))
+  }
+  #there were division series in 1981 because of the strike
+  if(i == 1981){ 
+    urls = c(urls, str_replace(ws_url, "WS", "AEDIV"), 
+             str_replace(ws_url, "WS", "AWDIV"),
+             str_replace(ws_url, "WS", "NEDIV"), 
+             str_replace(ws_url, "WS", "NWDIV"))
   }
   if(i == 1995){ 
-    urls = c(urls, str_replace(base_url, "WS", "ALDS1"), str_replace(base_url, "WS", "ALDS2"),
-             str_replace(base_url, "WS", "NLDS1"), str_replace(base_url, "WS", "NLDS2"))
+    urls = c(urls, str_replace(ws_url, "WS", "ALDS1"), 
+             str_replace(ws_url, "WS", "ALDS2"),
+             str_replace(ws_url, "WS", "NLDS1"), 
+             str_replace(ws_url, "WS", "NLDS2"))
   }
   for(each in urls){
     #read the website
