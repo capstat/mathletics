@@ -14,7 +14,7 @@ playoffs = data.frame()
 ws_url = "http://www.baseball-reference.com/postseason/%s_WS.shtml"
 urls = c(ws_url)
 #for every year since 1st world series
-for(i in seq(1903, 2016, 1)){
+for(i in seq(1980, 2007, 1)){
   #skip the years without world series
   if(i == 1904 | i == 1994){ next }
   #set urls based upon ployoff structure
@@ -52,6 +52,8 @@ for(i in seq(1903, 2016, 1)){
     results = temp_html %>% 
       html_nodes("h2") %>% 
       html_text()
+    #track progress
+    print(results[1])
     #sample result:
     #"2007 NLCS (4-0): Colorado Rockies (90-73) over Arizona Diamondbacks (90-72)"
     #extract all the numbers for later use
@@ -74,8 +76,6 @@ for(i in seq(1903, 2016, 1)){
     )
     #combine the temp df with our initial df
     playoffs = rbind(playoffs, temp)
-    #track progress
-    print(paste(i, temp$series[1]))
   }
 }
 #empty data frame for team stats

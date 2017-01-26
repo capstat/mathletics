@@ -551,8 +551,10 @@ MAD = sapply(exponent, function(x){
 #read the csv from github
 all_series = read.csv(
 &quot;https://raw.githubusercontent.com/capstat/mathletics/master/Chapter_1/mlb_playoffs.csv&quot;)
-#just the years from 1980-2007
-series_80_07 = all_series[all_series$year &gt;= 1989 &amp; all_series$year &lt;= 2007,]
+#just playoffs from the years 1980 to 2007 
+series_80_07 = all_series[all_series$year &gt;= 1980 &amp; 
+                            all_series$year &lt;= 2007 &amp;
+                            all_series$series != &quot;World Series&quot;,]
 #add a column for scoring ratio
 series_80_07$Ratio = series_80_07$R/series_80_07$pR
 #data frame for the winners and losers
@@ -566,8 +568,8 @@ series_df = cbind(winners, losers)
 series_df$W.W.Greater = ifelse(series_df$pW &gt; series_df$LpW, TRUE, FALSE)
 series_df$W.Ratio.Greater = ifelse((series_df$Ratio) &gt; (series_df$LRatio),
   TRUE, FALSE)</code></pre>
-<p>We found that the Pythagorean approach correctly predicted 57 of 106 playoff series (<code>55.7%</code>) while the “games won” approach correctly predicted the winner of only <code>50%</code> (50 out of 100) of playoff series.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
-<p>The reader is probably disappointed that even the Pythagorean method only correctly forecasts the outcome of less than 54% of baseball playoff series. I believe that the regular season is a relatively poor predictor of the playoffs in baseball because a team’s regular season record depends greatly on the performance of five starting pitchers. During the playoffs teams only use three or four starting pitchers, so much of the regular season data (games involving the fourth and fifth starting pitchers) are not relevant for predicting the outcome of the playoffs.</p>
+<p>We found that the Pythagorean approach correctly predicted 61 of 106 playoff series (<code>57.5%</code>) while the “games won” approach correctly predicted the winner of only <code>52%</code> (52 out of 100) of playoff series.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>The reader is probably disappointed that even the Pythagorean method only correctly forecasts the outcome of less than 58% of baseball playoff series. I believe that the regular season is a relatively poor predictor of the playoffs in baseball because a team’s regular season record depends greatly on the performance of five starting pitchers. During the playoffs teams only use three or four starting pitchers, so much of the regular season data (games involving the fourth and fifth starting pitchers) are not relevant for predicting the outcome of the playoffs.</p>
 <p>For anecdotal evidence of how the Pythagorean Theorem forecasts the future performance of a team better than a team’s win-loss record, consider the case of the 2005 Washington Nationals. On July 4, 2005, the Nationals were in first place with a record of 50–32. If we extrapolate this winning percentage we would have predicted a final record of 99–63. On July 4, 2005, the Nationals scoring ratio was .991. On July 4, 2005, (1.2) would have predicted a final record of 80–82. Sure enough, the poor Nationals finished 81–81.</p>
 </div>
 <div id="the-importance-of-the-pythagorean-theorem" class="section level3">
