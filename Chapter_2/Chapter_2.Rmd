@@ -1,0 +1,289 @@
+---
+title: "Mathletics"
+author: "by Wayne Winston, R code by Nick Capofari"
+date: "January 27, 2017"
+output: 
+  html_document:
+    theme: united
+    toc: true
+    toc_depth: 3
+---
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "all",
+            formatNumber: function (n) {return '2.' + n}
+      } 
+  }
+});
+</script>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-92218679-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      warning=FALSE, message=FALSE)
+```
+
+#Chapter 2: WHO HAD A BETTER YEAR, NOMAR GARCIAPARRA OR ICHIRO SUZUKI?
+
+###The Runs-Created Approach  
+
+In 2004 Seattle Mariner outfielder Ichiro Suzuki set the major league record for most hits in a season. In 1997 Boston Red Sox shortstop Nomar Garciaparra had what was considered a good (but not great) year. Their key statistics are presented in table 2.1.[^1] (For the sake of simplicity, henceforth Suzuki will be referred to as “Ichiro” or “Ichiro 2004” and Garciaparra will be referred to as “Nomar” or “Nomar 1997.”)
+
+Recall that a batter’s slugging percentage is Total Bases (TB)/At Bats (AB) where
+
+$$
+\begin{equation} 
+\textrm{TB} = \textrm{Singles} + 2 \times \textrm{Doubles (2B)} + 3 \times \textrm{Triples (3B)} + 4 \times \textrm{Home Runs (HR).}
+\end{equation}
+$$
+
+```{r}
+#get the tables from Lahman
+library("Lahman")
+#load the batting stats
+data(Batting)
+my_stats = Batting[
+  #ichiro 2004
+  (Batting$playerID == "suzukic01" & Batting$yearID == 2004) |
+  #nomar 1997
+  (Batting$playerID == "garcino01" & Batting$yearID == 1997) |
+  #bonds 2004 --- for later
+  (Batting$playerID == "bondsba01" & Batting$yearID == 2004), ]
+#add column for singles
+my_stats$Singles = my_stats$H -
+  (my_stats$X2B + my_stats$X3B + my_stats$HR)
+#add batting average and SLG
+my_stats$BA = my_stats$H/my_stats$AB
+my_stats$TB = (my_stats$Singles + 
+  2*my_stats$X2B + 
+  3*my_stats$X3B + 
+  4*my_stats$HR)
+my_stats$SLG = my_stats$TB/my_stats$AB
+```
+
+```{r echo=FALSE}
+library(knitr)
+library(stringr)
+display = data.frame(
+  rbind(
+    c("AB", my_stats$AB),
+    c("Batting Average", str_replace(round(my_stats$BA, 3), "0", "")),
+    c("SLG", str_replace(round(my_stats$SLG, 3), "0", "")),
+    c("Hits", my_stats$H),
+    c("Singles", my_stats$Singles),
+    c("2B", my_stats$X2B),
+    c("3B", my_stats$X3B),
+    c("HR", my_stats$HR),
+    c("BB+HBP", my_stats$BB+my_stats$IBB+my_stats$HBP)))
+colnames(display) = c("Event", "Ichiro 2004", "Nomar 1997")
+kable(display[,c(1:3)],
+      row.names=FALSE,
+      caption="TABLE 2.1 Statistics for Ichiro Suzuki and Nomar Garciaparra")
+```
+
+We see that Ichiro had a higher batting average than Nomar, but because he hit many more doubles, triples, and home runs, Nomar had a much higher slugging percentage. Ichiro walked a few more times than Nomar did. So which player had a better hitting year?
+
+When a batter is hitting, he can cause good things (like hits or walks) tend to happen or cause bad things (outs) to happen. To compare hitters we must develop a metric that measures how the relative frequency of a batter’s good events and bad events influence the number of runs the team scores.
+
+In 1979 Bill James developed the first version of his famous Runs Created Formula in an attempt to compute the number of runs “created” by a hitter during the course of a season. The most easily obtained data we have available to determine how batting events influence Runs Scored are season-long team batting statistics. A sample of this data is shown in figure 2.1.
+
+```{r}
+#use the dplyr package to combine the player data into team data
+library(dplyr)
+#change all missing values for IBB and HBP to 0
+Batting$HBP[is.na(Batting$HBP)] = 0
+Batting$IBB[is.na(Batting$IBB)] = 0
+team_batting = Batting %>% 
+  #add column for singles and one for any type of walk
+  mutate(Singles=H-(X2B+X3B+HR),
+         any_walk=BB+HBP) %>%
+  #group by year and team
+  group_by(yearID, teamID) %>%
+  #sum what we need
+  summarise(Runs=sum(R), `At Bats`=sum(AB), Hits=sum(H),
+            Singles=sum(Singles), `2B`=sum(X2B), `3B`=sum(X3B), 
+            HR=sum(HR), `BB+HBP`=sum(any_walk)) %>%
+  #change the column names
+  rename(Year=yearID, Team=teamID)
+#save as a csv
+write.csv(team_batting, "team_batting.csv", row.names=FALSE)
+```
+
+```{r echo=FALSE}
+display = team_batting %>%
+  filter(Year==2000) %>%
+  select(Year, Runs, `At Bats`, Hits, Singles,
+         `2B`, `3B`, HR, `BB+HBP`, Team) 
+kable(display,
+      row.names=FALSE,
+      caption="Figure 2.1. Team batting data for 2000 season.")
+```
+
+James realized there should be a way to predict the runs for each team from hits, singles, 2B, 3B, HR, outs, and BB+HBP.[^2] Using his great intuition, James came up with the following relatively simple formula.
+
+$$
+\begin{equation} 
+\textrm{runs created} = 
+\frac{(\textrm{hits} + \textrm{BB} + \textrm{HBP}) 
+\times (\textrm{TB})}
+{(\textrm{AB} + \textrm{BB} + \textrm{HBP})}.
+\end{equation}
+$$
+
+As we will soon see, (2.2) does an amazingly good job of predicting how many runs a team scores in a season from hits, BB, HBP, AB, 2B, 3B, and HR. What is the rationale for (2.2)? To score runs you need to have runners on base, and then you need to advance them toward home plate: (Hits Walks HBP) is basically the number of base runners the team will have in a season. The other part of the equation, $\frac{\textrm{TB}}{(\textrm{AB} + \textrm{BB} + \textrm{HBP})}$, measures the rate at which runners are advanced per plate appearance. Therefore (2.2) is multiplying the number of base runners by the rate at which they are advanced. Using the information in figure 2.1 we can compute Runs Created for the 2000 Anaheim Angels.
+
+$$
+\begin{equation} 
+\textrm{runs created} = 
+\frac{(1,574 + 655) 
+\times 995 + 2(309) + 3(34) + 4(236))}
+{(5,628+655)}
+=943.
+\end{equation}
+$$
+
+```{r}
+#total bases for each team
+team_batting$TB = team_batting$Singles + 
+  2*(team_batting$`2B`) + 
+  3*(team_batting$`3B`) + 
+  4*(team_batting$HR)
+#runs created
+team_batting$RC = ((team_batting$Hits + team_batting$`BB+HBP`)*team_batting$TB)/
+  (team_batting$`At Bats` + team_batting$`BB+HBP`)
+#percent error
+team_batting$RC_error = abs((team_batting$RC-team_batting$Runs)/team_batting$Runs)
+```
+
+```{r echo=FALSE}
+library(scales)
+display = team_batting %>%
+  filter(Year>=2000, Year<=2006) %>%
+  select(Year, Team, Runs, RC, RC_error) 
+display$RC = round(display$RC, 2)
+display$RC_error = percent(round(display$RC_error, 3))
+kable(display[display$Year==2000,], row.names=FALSE,
+      col.names=c("Year", "Team", "Runs", "RC", "% Error"),
+      caption="Figure 2.2. Team Runs and Runs Created for the 2000 season.")
+```
+
+Actually, the 2000 Anaheim Angels scored 864 runs, so Runs Created overestimated the actual number of runs by around 9%. 
+
+We find that Runs Created was off by an average of 28 runs per team. Since the average team scored 775 runs, we find an average error of less than 4% when we try to use (2.2) to predict team Runs Scored. It is amazing that this simple, intuitively appealing formula does such a good job of predicting runs scored by a team. Even though more complex versions of Runs Created more accurately predict actual Runs Scored, the simplicity of (2.2) has caused this formula to continue to be widely used by the baseball community.
+
+```{r echo=FALSE}
+totals = data.frame("2000-2006", "League Average", 
+                    round(mean(display$Runs), 2), 
+                    round(mean(abs(display$Runs-display$RC)), 2),
+                    percent(round(
+                      mean(abs(display$Runs-display$RC)/display$Runs), 4)))
+kable(totals, row.names=FALSE,
+      col.names=c("Year", "Team", "Runs", "RC Error", "% Error"),
+      caption=" ")
+```
+
+###Beware Blind Extrapolation!
+
+The problem with any version of Runs Created is that the formula is based on team statistics. A typical team has a batting average of .265, hits home runs on 3% of all plate appearances, and has a walk or HBP in around 10% of all plate appearances. Contrast these numbers to those of Barry Bonds’s great 2004 season in which he had a batting average of .362, hit a HR on 7% of all plate appearances, and received a walk or HBP during approximately 39% of his plate appearances. One of the first ideas taught in business statistics class is the following: do not use a relationship that is fit to a data set to make predictions for data that are very different from the data used to fit the relationship. Following this logic, we should not expect a Runs Created Formula based on team data to accurately predict the runs created by a superstar such as Barry Bonds or by a very poor player. In chapter 4 we will remedy this problem.
+
+###Ichiro vs. Nomar
+
+Despite this caveat, let’s plunge ahead and use (2.2) to compare Ichiro Suzuki’s 2004 season to Nomar Garciaparra’s 1997 season. Let’s also compare Runs Created for Barry Bonds’s 2004 season to compare his statistics with those of the other two players. (See figure 2.3.)
+
+```{r}
+#any walk
+my_stats$any_walk = my_stats$BB+my_stats$HBP
+#runs created
+my_stats$RC = ((my_stats$H + my_stats$any_walk)*my_stats$TB)/
+  (my_stats$AB + my_stats$any_walk)
+#game outs used
+my_stats$outs = 0.982*my_stats$AB - my_stats$H + 
+  my_stats$GIDP + my_stats$SF + my_stats$SH + my_stats$CS
+#runs created per game
+my_stats$RCG = my_stats$RC/(my_stats$outs/26.72)
+```
+
+```{r echo=FALSE}
+my_stats$Player = c("Garciapara 1997",
+                    "Bonds 2004", 
+                    "Suzuki 2004")
+display = my_stats[c(2,3,1),c(31,2,7,9,23,10:12,27:30)]
+display$RC = round(display$RC, 2)
+display$outs = round(display$outs, 2)
+display$RCG = round(display$RCG, 2)
+kable(display, row.names=FALSE,
+      col.names=c("Player", "Year", "At Bats", "Hits", "Singles", 
+                  "2B", "3B", "HR", "BB + HBP", "Runs Created", 
+                  "Game Outs Used", "Runs Creates per Game"),
+      caption="Figure 2.3. Runs Created for Bonds, Suzuki, and Garciaparra.")
+```
+
+We see that Ichiro created 133 runs and Nomar created 126 runs. Bonds created 186 runs. This indicates that Ichiro 2004 had a slightly better hitting year than Nomar 1997. Of course Bonds’s performance in 2004 was vastly superior to that of the other two players.
+
+###Runs Created Per Game
+
+A major problem with any Runs Created metric is that a bad hitter with 700 plate appearances might create more runs than a superstar with 400 plate appearances. In figure 2.4 we compare the statistics of two hypothetical players: Nick and Dave 
+
+```{r echo=FALSE}
+display = data.frame(
+  a=c("Nick","Dave"),
+  b=c(700,400),
+  c=c(190,120),
+  d=c(150,90),
+  e=c(10,15),
+  f=c(1,0),
+  g=c(9,15),
+  h=c(20,20),
+  i=c(60.96,60.00),
+  j=c(497.40,272.80),
+  k=c(3.27,5.88)
+)
+kable(display, row.names=FALSE,
+      col.names=c("Player", "At Bats", "Hits", "Singles", 
+                  "2B", "3B", "HR", "BB + HBP", "Runs Created", 
+                  "Game Outs Used", "Runs Creates per Game"),
+      caption="Figure 2.4. Nick and Dave’s fictitious statistics.")
+```
+
+Nick had a batting average of .257 while Dave had a batting average of .300. Dave walked more often per plate appearance and had more extra-base hits. Yet Runs Created says Nick was a better player. To solve this problem we need to understand that hitters consume a scarce resource: outs. During most games a team bats for nine innings and gets 27 outs (3 outs X 9 innings = 27).[^3]  We can now compute Runs Created per game. To see how this works let’s look at the data for Ichiro 2004 (figure 2.3).
+
+How did we compute outs? Essentially all AB except for hits and errors result in an out. Approximately 1.8% of all AB result in errors. Therefore, we computed outs as AB - Hits - .018(AB) = .982(AB) - Hits. Hitters also create “extra” outs through sacrifice flies (SF), sacrifice bunts (SH), caught stealing (CS), and grounding into double plays (GIDP). In 2004 Ichiro created 22 of these extra outs. He
+“used” up 451.3 outs for the Mariners. This is equivalent to $\frac{451.3}{26.72} = 16.9$ games. Therefore, Ichiro created $\frac{133.16}{16.9} = 7.88$ runs per game. More formally,  
+
+$$
+\begin{equation} 
+\textrm{runs created per game} = 
+\frac{\textrm{runs created}}
+{\frac{.982\textrm{(AB) - hits + GIDP + SF + SH + CS}}{26.72}}
+\end{equation}
+$$
+
+
+Equation (2.4) simply states that Runs Created per game is Runs Created by batter divided by number of games’ worth of outs used by the batter. Figure 2.3 shows that Barry Bonds created an amazing 20.63 runs per game. Figure 2.3 also makes it clear that Ichiro in 2004 was a much more valuable hitter than was Nomar in 1997. After all, Ichiro created 7.88 runs per game while Nomar created 1.01 fewer runs per game (6.87 runs). We also see that Runs Created per game rates Dave as being 2.61 runs (5.88 - 3.27) better per game than Nick. This resolves the problem that ordinary Runs Created allowed Nick to be ranked ahead of Dave.
+  
+Our estimate of Runs Created per game of 7.88 for Ichiro indicates that we believe a team consisting of nine Ichiros would score an average of 7.88 runs per game. Since no team consists of nine players like Ichiro, a more relevant question might be, how many runs would he create when batting with eight “average hitters”? In his book *Win Shares* (2002) Bill James came up with a more complex version of Runs Created that answers this question. I will address this question in [chapter 3](http://statisland.com/mathletics/Chapter_3.html) and [chapter 4](http://statisland.com/mathletics/Chapter_3.html).
+
+[^1]:The data come from Sean Lahman’s fabulous baseball database, [http://baseball1.com/statistics/](http://baseball1.com/statistics/).
+
+[^2]:Of course, we are leaving out things like Sacrifice Hits, Sacrifice Flies, Stolen Bases and Caught Stealing. Later versions of Runs Created use these events to compute Runs Created. See [http://danagonistes.blogspot.com/2004/10/brief-history-of-run-estimation-runs.html](http://danagonistes.blogspot.com/2004/10/brief-history-of-run-estimation-runs.html) for an excellent summary of the evolution of Runs Created.
+
+[^3]:Since the home team does not bat in the ninth inning when they are ahead and some games go into extra innings, average outs per game is not exactly 27. For the years 2001–6, average outs per game was 26.72.
+
+[Keep Reading](http://statisland.com/mathletics/Chapter_3.html)
+
+[Contact Me!](mailto:nick@statisland.com)
+
+[Home](http://statisland.com/mathletics/Introduction.html)  
